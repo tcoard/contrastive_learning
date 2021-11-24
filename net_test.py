@@ -1,9 +1,11 @@
 import math
+import copy
 import random
 import pickle
 from collections import OrderedDict, Counter
 import torch
 from torch import nn
+from sklearn.metrics import f1_score, accuracy_score
 import numpy as np
 
 import glob
@@ -14,7 +16,8 @@ random.seed(0)
 np.random.seed(0)
 
 MAX_AA_LEN = 1000
-BATCH_SIZE = 17
+BATCH_SIZE = 1
+SAMPLE_PER_SEQ = 16
 
 class_lookup = {
     "AMINOGLYCOSIDE": 0,
@@ -28,10 +31,6 @@ class_lookup = {
     "TETRACYCLINE": 8,
     "TRIMETHOPRIM": 9,
 }
-
-
-class TooLong(Exception):
-    pass
 
 
 class ResNet(torch.nn.Module):
@@ -95,22 +94,13 @@ architecture = torch.nn.Sequential(
 ).to(DEVICE)
 
 
-def pad(tensor):
-    aa_len, _ = tensor.shape
-
-    if aa_len > MAX_AA_LEN:
-        raise TooLong
-
-    aa_len_diff = float(MAX_AA_LEN - aa_len)
-    pad_amount = (0, 0, math.ceil(aa_len_diff / 2), math.floor(aa_len_diff / 2))
-    return nn.functional.pad(tensor, pad_amount, "constant", 0)
-
-
 def get_pair_names(old_pairs=None, run_type="test"):
     if old_pairs is None:
         old_pairs = []
     else:
-        old_pairs = ["|".join(pair.split("|")[0:-1]).split("/")[1] for pair, _ in old_pairs]
+
+        old_pairs = [j for i in old_pairs for j in i]
+        old_pairs = ["|".join(pair.split("|")[0:-1]).split("/")[1] for pair in old_pairs]
     pairs = []
     total_types = []
     with open("data/esm40.fa", "r") as f:
@@ -122,15 +112,17 @@ def get_pair_names(old_pairs=None, run_type="test"):
                 res = header.split("|")[2]
                 if Counter(total_types)[res] < BATCH_SIZE and header not in old_pairs:
                     # pairs.append([pair.split('/')[1] for pair in glob.glob(f"test_embeddings/{header}*")])
-                    pairs.append(glob.glob(f"test_embeddings/{header}*"))
+                    pairs.append(random.sample(glob.glob(f"processed_embeddings/{header}*"), SAMPLE_PER_SEQ))
                     total_types.append(res)
     # pairs = random.choices(pairs, k=100)
     with open(f"pairs_{run_type}.pkl", "wb") as f:
         pickle.dump(pairs, f)
 
 
-def contrastive_network(pairs):
-    model = architecture
+def contrastive_network(variations):
+    model1 = architecture
+    # model2 = copy.deepcopy(architecture)
+    model2 = architecture
     # Create Tensors to hold input and outputs.
 
     # model = nn.Sequential(OrderedDict([
@@ -145,23 +137,22 @@ def contrastive_network(pairs):
     # The nn package also contains definitions of popular loss functions; in this
     # case we will use Mean Squared Error (MSE) as our loss function.
     loss_fn = nn.MSELoss(reduction="sum")
+    # loss_fn = nn.CosineSimilarity(dim=1)
 
     learning_rate = 1e-6
-    for epoch in range(1000):
+    for epoch in range(2000):
         epoch_loss = 0
         batch1 = []  # torch.empty(0).to(DEVICE)
         batch2 = []  # torch.empty(0).to(DEVICE)
-        for pair1, pair2 in pairs:
-            try:
-                x1 = torch.load(pair1)["representations"][34].to(DEVICE)
-                x1 = pad(x1)
-                x2 = torch.load(pair2)["representations"][34].to(DEVICE)
-                x2 = pad(x2)
+        for seqs in variations:
+            seqs = iter(seqs)
+            for pair1 in seqs:
+                pair2 = next(seqs)
+                x1 = torch.load(pair1).to(DEVICE)
+                x2 = torch.load(pair2).to(DEVICE)
                 # there is probably a more efficient way to do this
                 batch1.append(x1)  # = torch.stack((batch1, x1), 0)
                 batch2.append(x2)  # = torch.stack((batch2, x2), 0)
-            except TooLong:
-                continue
         batch1 = torch.stack(batch1, dim=0)
         batch2 = torch.stack(batch2, dim=0)
 
@@ -172,12 +163,13 @@ def contrastive_network(pairs):
 
         # test_model = torch.nn.Conv1d(1000, 32, kernel_size=7).to(DEVICE)
         # test_pred = test_model(batch1).to(DEVICE)
-        y_pred1 = model(batch1).to(DEVICE)
-        y_pred2 = model(batch2).to(DEVICE)
+        y_pred1 = model1(batch1).to(DEVICE)
+        y_pred2 = model2(batch2).to(DEVICE)
 
         # Compute and print loss. We pass Tensors containing the predicted and true
         # values of y, and the loss function returns a Tensor containing the
         # loss.
+
         loss = loss_fn(y_pred1, y_pred2)
         epoch_loss += loss
         # if epoch % 100 == 99:
@@ -185,7 +177,8 @@ def contrastive_network(pairs):
         print(epoch, epoch_loss.item())
 
         # Zero the gradients before running the backward pass.
-        model.zero_grad()
+        model1.zero_grad()
+        # model2.zero_grad()
 
         # Backward pass: compute gradient of the loss with respect to all the learnable
         # parameters of the model. Internally, the parameters of each Module are stored
@@ -196,13 +189,15 @@ def contrastive_network(pairs):
         # Update the weights using gradient descent. Each parameter is a Tensor, so
         # we can access its gradients like we did before.
         with torch.no_grad():
-            for param in model.parameters():
+            for param in model1.parameters():
                 param -= learning_rate * param.grad
+            # for param in model2.parameters():
+            #     param -= learning_rate * param.grad
 
         # You can access the first layer of `model` like accessing the first item of a list
 
     # For linear layer, its parameters are stored as `weight` and `bias`.
-    torch.save(model.state_dict(), "model1.pth")
+    torch.save(model1.state_dict(), "model1.pth")
 
 
 def classifier(pairs):
@@ -222,17 +217,16 @@ def classifier(pairs):
     learning_rate = 1e-6
     for epoch in range(200):
         epoch_loss = 0
-        y_actual = torch.zeros(len(pairs), 10).to(DEVICE)
+
+        flattened_seqs = [j for i in pairs for j in i]
+
+        y_actual = torch.zeros(len(flattened_seqs), 10).to(DEVICE)
         batch1 = []  # torch.empty(0).to(DEVICE)
-        for i, (pair1, _) in enumerate(pairs):
-            y_actual[i][class_lookup[pair1.split("|")[-2]] - 1] = 1
-            try:
-                x1 = torch.load(pair1)["representations"][34].to(DEVICE)
-                x1 = pad(x1)
-                # there is probably a more efficient way to do this
-                batch1.append(x1)  # = torch.stack((batch1, x1), 0)
-            except TooLong:
-                continue
+        for i, seq in enumerate(flattened_seqs):
+            y_actual[i][class_lookup[seq.split("|")[-2]] - 1] = 1
+            x1 = torch.load(seq).to(DEVICE)
+            # there is probably a more efficient way to do this
+            batch1.append(x1)  # = torch.stack((batch1, x1), 0)
         batch1 = torch.stack(batch1, dim=0)
 
         y_pred1 = model(batch1).to(DEVICE)
@@ -251,36 +245,34 @@ def classifier(pairs):
         # You can access the first layer of `model` like accessing the first item of a list
 
     # For linear layer, its parameters are stored as `weight` and `bias`.
-    torch.save(model.state_dict(), "model2.pth")
+    torch.save(model.state_dict(), "class_model.pth")
 
 
 def get_accuracy(test_pairs):
-    nn_arch = architecture
+    class_arch = ClassifyNet(pretrained_module=architecture)
+    trained_model = torch.load("class_model.pth")
+    class_arch.load_state_dict(trained_model)
 
-    trained_model = torch.load("model1.pth")
-    nn_arch.load_state_dict(trained_model)
-    trained_model = ClassifyNet(pretrained_module=nn_arch)
-
-    y_actual = np.zeros((len(test_pairs), 10))
+    flattened_seqs = [j for i in test_pairs for j in i]
+    y_actual = np.zeros((len(flattened_seqs), 10))
     batch1 = []  # torch.empty(0).to(DEVICE)
-    for i, (pair1, _) in enumerate(test_pairs):
+
+    for i, pair1 in enumerate(flattened_seqs):
         y_actual[i][class_lookup[pair1.split("|")[-2]] - 1] = 1
-        try:
-            x1 = torch.load(pair1)["representations"][34].to(DEVICE)
-            x1 = pad(x1)
-            # there is probably a more efficient way to do this
-            batch1.append(x1)  # = torch.stack((batch1, x1), 0)
-        except TooLong:
-            continue
+        x1 = torch.load(pair1).to(DEVICE)
+        # there is probably a more efficient way to do this
+        batch1.append(x1)  # = torch.stack((batch1, x1), 0)
     batch1 = torch.stack(batch1, dim=0)
 
-    y_pred = trained_model(batch1).to(DEVICE)
-    preds = np.argmax(y_pred.cpu().detach().numpy(), axis=1)
-    actual = np.argmax(y_actual, axis=1)
-    print(preds)
-    print(actual)
-    print(sum([a == b for a, b in zip(preds, actual)]))
-    print(len(preds))
+    y_pred = class_arch(batch1).to(DEVICE)
+    y_pred = np.argmax(y_pred.cpu().detach().numpy(), axis=1)
+    y_true = np.argmax(y_actual, axis=1)
+    print(y_pred)
+    print(y_true)
+    print(sum([a == b for a, b in zip(y_pred, y_true)]))
+    print(len(y_pred))
+    print(f1_score(y_true, y_pred, average="macro"))
+    print(accuracy_score(y_true, y_pred))
 
 
 def main():

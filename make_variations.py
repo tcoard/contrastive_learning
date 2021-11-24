@@ -4,6 +4,7 @@ from make_sub_stat import substitution_freq
 #FILE = "scop_sf_represeq_lib_latest.fa"
 FILE = "data/esm40.fa"
 MODIFIED_OUT = "data/modified.fa"
+NUM_VARIATIONS = 16
 
 def make_sub(seq):
     pos=random.randrange(len(seq))
@@ -15,34 +16,30 @@ def make_deletion(seq):
     pos=random.randrange(len(seq))
     return seq[:pos]+seq[pos+1:]
 
-def write_pairs(header, seq, out_f):
+def write_variations(header, seq, out_f):
     # TODO, one data modifacation could possibly undo another data modifacation
     # deal with old data
-    new_seq = ""
+    cleaned_seq = ""
     for aa in seq:
         if aa not in "ACDEFGHIKLMNPQRSTVWY":
             aa = "X"
-        new_seq += aa
+        cleaned_seq += aa
+    print(f"{header}|var0", file=out_f)
+    print(cleaned_seq, file=out_f)
 
-    pair1 = pair2 = new_seq
-    pair1 = list(pair1)
-    pair2 = list(pair2)
-    for _ in range(2):
-        pair1 = make_deletion(pair1)
-        pair2 = make_deletion(pair2)
+    for i in range(1, NUM_VARIATIONS):
+        var_seq = list(cleaned_seq)
+        for _ in range(2):
+            var_seq = make_deletion(var_seq)
 
-    for _ in range(5):
-        pair1 = make_sub(pair1)
-        pair2 = make_sub(pair2)
-        # we should probably make sure the final step doesn't make two copies of the same seq
-        # if we are running millions of sequences, this could slow down data augmenation though
-        # while pair2 == pair1:
-    pair1 = ''.join(pair1)
-    pair2 = ''.join(pair2)
-    print(f"{header}|pair1", file=out_f)
-    print(pair1, file=out_f)
-    print(f"{header}|pair2", file=out_f)
-    print(pair2, file=out_f)
+        for _ in range(5):
+            var_seq = make_sub(var_seq)
+            # we should probably make sure the final step doesn't make two copies of the same seq
+            # if we are running millions of sequences, this could slow down data augmenation though
+            # while pair2 == pair1:
+        var_seq = ''.join(var_seq)
+        print(f"{header}|var{i}", file=out_f)
+        print(var_seq, file=out_f)
 
 def main():
     header = ""
@@ -52,13 +49,13 @@ def main():
             line = line.strip()
             if line.startswith(">"):
                 if header:
-                    write_pairs(header, seq, out_f)
+                    write_variations(header, seq, out_f)
                 header = line
                 seq = ""
             else:
                 seq += line
 
-        write_pairs(header, seq, out_f)
+        write_variations(header, seq, out_f)
 
 
 if __name__ == "__main__":
