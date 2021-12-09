@@ -193,7 +193,7 @@ def set_loader(opt):
         # train_dataset = datasets.DatasetFolder(root=opt.data_folder, loader=torch.load, extensions="txt",
         # train_dataset = datasets.DatasetFolder(root=opt.data_folder, loader=name_loader, extensions="txt",
         #                                     transform=BSWorkAround(not_a_transform))
-    opt.data_folder = "/home/tcoard/w/contrastive/processed_embeddings"
+    # opt.data_folder = "/home/tcoard/w/contrastive/med_emb"
     train_dataset = CoalaDataset(root_dir=opt.data_folder)
     # else:
     #     raise ValueError(opt.dataset)
@@ -222,21 +222,21 @@ def set_loader(opt):
 
 
 def set_model(opt):
-    # model = SupConResNet(name=opt.model)
+    model = SupConResNet(name=opt.model)
 
-    model = SingleModel(
-        in_channels=1280,
-        out_channels=att_opt.ResNet_out_channels,
-        kernel_size=att_opt.ResNet_kernel_size,
-        n_layers=att_opt.ResNet_n_layers,
-        n_class=10,
-        n_hidden_state=att_opt.LSTM_n_hidden_state[0],
-        use_gru=True,
-        lstm_dropout=0,
-        n_lstm_layers=1,
-        activation="sigmoid",
-        hierarchical=False,
-    ).to(DEVICE)
+    # model = SingleModel(
+    #     in_channels=1280,
+    #     out_channels=att_opt.ResNet_out_channels,
+    #     kernel_size=att_opt.ResNet_kernel_size,
+    #     n_layers=att_opt.ResNet_n_layers,
+    #     n_class=10,
+    #     n_hidden_state=att_opt.LSTM_n_hidden_state[0],
+    #     use_gru=True,
+    #     lstm_dropout=0,
+    #     n_lstm_layers=1,
+    #     activation="sigmoid",
+    #     hierarchical=False,
+    # ).to(DEVICE)
 
     criterion = SupConLoss(temperature=opt.temp)
 
@@ -293,8 +293,7 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
         # x_length = [len([1 for j in i if max(j) > 0]) for i in images]
         # with Pool(5) as pool:
         x_length = get_x_length(images)
-
-        features = model(images, x_length)
+        features = model(images)#, x_length)
         f1, f2 = torch.split(features, [bsz, bsz], dim=0)
         features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
         if opt.method == "SupCon":
@@ -372,10 +371,12 @@ def main():
 
         if epoch % opt.save_freq == 0:
             save_file = os.path.join(opt.save_folder, "ckpt_epoch_{epoch}.pth".format(epoch=epoch))
+
             save_model(model, optimizer, opt, epoch, save_file)
 
     # save the last model
-    save_file = os.path.join(opt.save_folder, "last.pth")
+    hour = time.strftime('%X')
+    save_file = os.path.join(opt.save_folder, f"{hour}_last.pth")
     save_model(model, optimizer, opt, opt.epochs, save_file)
 
 

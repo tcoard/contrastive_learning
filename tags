@@ -1,0 +1,155 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	//
+AverageMeter	SupContrastFork/util.py	/^class AverageMeter(object):$/;"	c
+BATCH_SIZE	contrastive_network_first_draft/net_test.py	/^BATCH_SIZE = 1$/;"	v
+BATCH_SIZE	get_datasets.py	/^BATCH_SIZE = 50$/;"	v
+BSWorkAround	SupContrastFork/util.py	/^class BSWorkAround:$/;"	c
+BasicBlock	SupContrastFork/network/resnet_big.py	/^class BasicBlock(nn.Module):$/;"	c
+Bottleneck	SupContrastFork/network/resnet_big.py	/^class Bottleneck(nn.Module):$/;"	c
+CLASS_LOOKUP	SupContrastFork/util.py	/^CLASS_LOOKUP = {$/;"	v
+CLASS_LOOKUP	plot_makers/gen_confusion.py	/^CLASS_LOOKUP = [$/;"	v
+ClassifyNet	contrastive_network_first_draft/net_test.py	/^class ClassifyNet(torch.nn.Module):$/;"	c
+CoalaDataset	SupContrastFork/util.py	/^class CoalaDataset(Dataset):$/;"	c
+DEVICE	SupContrastFork/main_supcon.py	/^DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")$/;"	v
+DEVICE	contrastive_network_first_draft/net_test.py	/^DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")$/;"	v
+F	SupContrastFork/network/resnet_big.py	/^import torch.nn.functional as F$/;"	I
+FILE	make_bert_vars.py	/^FILE = "data\/train.fa"$/;"	v
+FILE	make_variations.py	/^FILE = "data\/train.fa"$/;"	v
+LinearBatchNorm	SupContrastFork/network/resnet_big.py	/^class LinearBatchNorm(nn.Module):$/;"	c
+LinearClassifier	SupContrastFork/network/resnet_big.py	/^class LinearClassifier(nn.Module):$/;"	c
+MAX_AA_LEN	SupContrastFork/util.py	/^MAX_AA_LEN = 1000$/;"	v
+MAX_AA_LEN	contrastive_network_first_draft/net_test.py	/^MAX_AA_LEN = 1000$/;"	v
+MAX_AA_LEN	get_datasets.py	/^MAX_AA_LEN = 1000$/;"	v
+MAX_AA_LEN	preprocess_tensors.py	/^MAX_AA_LEN = 1000$/;"	v
+MODIFIED_OUT	make_bert_vars.py	/^MODIFIED_OUT = f"data\/{NAME}.fa"$/;"	v
+MODIFIED_OUT	make_variations.py	/^MODIFIED_OUT = f"data\/{NAME}.fa"$/;"	v
+MT_Config	SupContrastFork/mt_config.py	/^class MT_Config:$/;"	c
+NAME	make_bert_vars.py	/^NAME = f"train_{PERCENT_MOD}_indel_sub_bert_new"$/;"	v
+NAME	make_variations.py	/^NAME = f"train_{PERCENT_MOD}_indel_sub_bert"$/;"	v
+NUM_VARIATIONS	make_bert_vars.py	/^NUM_VARIATIONS = 16$/;"	v
+NUM_VARIATIONS	make_variations.py	/^NUM_VARIATIONS = 16$/;"	v
+PERCENT_MOD	make_bert_vars.py	/^PERCENT_MOD = 30$/;"	v
+PERCENT_MOD	make_variations.py	/^PERCENT_MOD = 5$/;"	v
+ResNet	SupContrastFork/network/resnet_big.py	/^class ResNet(nn.Module):$/;"	c
+ResNet	contrastive_network_first_draft/net_test.py	/^class ResNet(torch.nn.Module):$/;"	c
+SAMPLE_PER_SEQ	contrastive_network_first_draft/net_test.py	/^SAMPLE_PER_SEQ = 16$/;"	v
+SupCEResNet	SupContrastFork/network/resnet_big.py	/^class SupCEResNet(nn.Module):$/;"	c
+SupConResNet	SupContrastFork/network/resnet_big.py	/^class SupConResNet(nn.Module):$/;"	c
+TooLong	preprocess_tensors.py	/^class TooLong(Exception):$/;"	c
+TwoCropTransform	SupContrastFork/util.py	/^class TwoCropTransform:$/;"	c
+__call__	SupContrastFork/util.py	/^    def __call__(self, path):$/;"	m	class:BSWorkAround
+__call__	SupContrastFork/util.py	/^    def __call__(self, x):$/;"	m	class:TwoCropTransform
+__getitem__	SupContrastFork/util.py	/^    def __getitem__(self, idx):$/;"	m	class:CoalaDataset
+__init__	SupContrastFork/mt_config.py	/^    def __init__(self):$/;"	m	class:MT_Config
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, block, num_blocks, in_channel=3, zero_init_residual=False):$/;"	m	class:ResNet
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, dim, affine=True):$/;"	m	class:LinearBatchNorm
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, in_planes, planes, stride=1, is_last=False):$/;"	m	class:BasicBlock
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, in_planes, planes, stride=1, is_last=False):$/;"	m	class:Bottleneck
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, name='resnet50', head='mlp', feat_dim=128):$/;"	m	class:SupConResNet
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, name='resnet50', num_classes=10):$/;"	m	class:LinearClassifier
+__init__	SupContrastFork/network/resnet_big.py	/^    def __init__(self, name='resnet50', num_classes=10):$/;"	m	class:SupCEResNet
+__init__	SupContrastFork/util.py	/^    def __init__(self):$/;"	m	class:AverageMeter
+__init__	SupContrastFork/util.py	/^    def __init__(self, root_dir, run_type="train", transform=None):$/;"	m	class:CoalaDataset
+__init__	SupContrastFork/util.py	/^    def __init__(self, transform):$/;"	m	class:BSWorkAround
+__init__	SupContrastFork/util.py	/^    def __init__(self, transform):$/;"	m	class:TwoCropTransform
+__init__	contrastive_network_first_draft/net_test.py	/^    def __init__(self, module):$/;"	m	class:ResNet
+__init__	contrastive_network_first_draft/net_test.py	/^    def __init__(self, pretrained_module):$/;"	m	class:ClassifyNet
+__len__	SupContrastFork/util.py	/^    def __len__(self):$/;"	m	class:CoalaDataset
+_make_layer	SupContrastFork/network/resnet_big.py	/^    def _make_layer(self, block, planes, num_blocks, stride):$/;"	m	class:ResNet
+accuracy	SupContrastFork/util.py	/^def accuracy(output, target, topk=(1,)):$/;"	f
+adjust_learning_rate	SupContrastFork/util.py	/^def adjust_learning_rate(args, optimizer, epoch):$/;"	f
+architecture	contrastive_network_first_draft/net_test.py	/^architecture = torch.nn.Sequential($/;"	v
+att_opt	SupContrastFork/main_linear.py	/^att_opt = MT_Config()$/;"	v
+att_opt	SupContrastFork/main_supcon.py	/^att_opt = MT_Config()$/;"	v
+att_opt	SupContrastFork/make_emb.py	/^att_opt = MT_Config()$/;"	v
+class_lookup	contrastive_network_first_draft/net_test.py	/^class_lookup = {$/;"	v
+classifier	contrastive_network_first_draft/net_test.py	/^def classifier(pairs):$/;"	f
+contrastive_network	contrastive_network_first_draft/net_test.py	/^def contrastive_network(variations):$/;"	f
+cudnn	SupContrastFork/main_linear.py	/^import torch.backends.cudnn as cudnn$/;"	I
+cudnn	SupContrastFork/main_supcon.py	/^import torch.backends.cudnn as cudnn$/;"	I
+cudnn	SupContrastFork/make_emb.py	/^import torch.backends.cudnn as cudnn$/;"	I
+expansion	SupContrastFork/network/resnet_big.py	/^    expansion = 1$/;"	v	class:BasicBlock
+expansion	SupContrastFork/network/resnet_big.py	/^    expansion = 4$/;"	v	class:Bottleneck
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, features):$/;"	m	class:LinearClassifier
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, x):$/;"	m	class:BasicBlock
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, x):$/;"	m	class:Bottleneck
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, x):$/;"	m	class:LinearBatchNorm
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, x):$/;"	m	class:SupCEResNet
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, x):$/;"	m	class:SupConResNet
+forward	SupContrastFork/network/resnet_big.py	/^    def forward(self, x, layer=100):$/;"	m	class:ResNet
+forward	contrastive_network_first_draft/net_test.py	/^    def forward(self, inputs):$/;"	m	class:ClassifyNet
+forward	contrastive_network_first_draft/net_test.py	/^    def forward(self, inputs):$/;"	m	class:ResNet
+get_accuracy	contrastive_network_first_draft/net_test.py	/^def get_accuracy(test_pairs):$/;"	f
+get_pair_names	contrastive_network_first_draft/net_test.py	/^def get_pair_names(old_pairs=None, run_type="test"):$/;"	f
+get_seq_names	get_datasets.py	/^def get_seq_names(old_seqs=None, run_type="test", batch_size=BATCH_SIZE):$/;"	f
+get_x_length	SupContrastFork/main_linear.py	/^def get_x_length(data):$/;"	f
+get_x_length	SupContrastFork/main_supcon.py	/^def get_x_length(data):$/;"	f
+get_x_length	SupContrastFork/make_emb.py	/^def get_x_length(data):$/;"	f
+get_x_length	SupContrastFork/util.py	/^def get_x_length(data):$/;"	f
+losses	plot_makers/plot_loss.py	/^losses = [2.386,2.453,2.540,2.479,2.529,2.298,2.523,3.101,3.457,2.911,2.705,2.536,3.745,2.600,3./;"	v
+main	SupContrastFork/main_linear.py	/^def main():$/;"	f
+main	SupContrastFork/main_supcon.py	/^def main():$/;"	f
+main	SupContrastFork/make_emb.py	/^def main():$/;"	f
+main	contrastive_network_first_draft/net_test.py	/^def main():$/;"	f
+main	get_datasets.py	/^def main():$/;"	f
+main	make_bert_vars.py	/^def main():$/;"	f
+main	make_variations.py	/^def main():$/;"	f
+main	plot_makers/gen_confusion.py	/^def main():$/;"	f
+main	plot_makers/plot_loss.py	/^def main():$/;"	f
+main	plot_makers/sweep_graphs.py	/^def main():$/;"	f
+main	preprocess_tensors.py	/^def main():$/;"	f
+make_deletion	make_bert_vars.py	/^def make_deletion(seq):$/;"	f
+make_deletion	make_variations.py	/^def make_deletion(seq):$/;"	f
+make_insertions	make_bert_vars.py	/^def make_insertions(seq):$/;"	f
+make_insertions	make_variations.py	/^def make_insertions(seq):$/;"	f
+make_sub	make_bert_vars.py	/^def make_sub(seq):$/;"	f
+make_sub	make_variations.py	/^def make_sub(seq):$/;"	f
+model_dict	SupContrastFork/network/resnet_big.py	/^model_dict = {$/;"	v
+mtick	plot_makers/plot_loss.py	/^import matplotlib.ticker as mtick$/;"	I
+mtick	plot_makers/sweep_graphs.py	/^import matplotlib.ticker as mtick$/;"	I
+name_loader	SupContrastFork/main_supcon.py	/^    def name_loader(path):$/;"	f	function:set_loader	file:
+nn	SupContrastFork/network/resnet_big.py	/^import torch.nn as nn$/;"	I
+not_a_transform	SupContrastFork/main_supcon.py	/^    def not_a_transform(x):$/;"	f	function:set_loader	file:
+np	SupContrastFork/util.py	/^import numpy as np$/;"	I
+np	contrastive_network_first_draft/net_test.py	/^import numpy as np$/;"	I
+np	preprocess_tensors.py	/^import numpy as np$/;"	I
+optim	SupContrastFork/util.py	/^import torch.optim as optim$/;"	I
+pad	SupContrastFork/util.py	/^def pad(tensor):$/;"	f
+pad	preprocess_tensors.py	/^def pad(tensor):$/;"	f
+parse_option	SupContrastFork/main_linear.py	/^def parse_option():$/;"	f
+parse_option	SupContrastFork/main_supcon.py	/^def parse_option():$/;"	f
+parse_option	SupContrastFork/make_emb.py	/^def parse_option():$/;"	f
+plt	plot_makers/plot_loss.py	/^import matplotlib.pyplot as plt$/;"	I
+plt	plot_makers/sweep_graphs.py	/^import matplotlib.pyplot as plt$/;"	I
+print_fasta	get_datasets.py	/^def print_fasta(seqs, run_type):$/;"	f
+reset	SupContrastFork/util.py	/^    def reset(self):$/;"	m	class:AverageMeter
+resnet101	SupContrastFork/network/resnet_big.py	/^def resnet101(**kwargs):$/;"	f
+resnet18	SupContrastFork/network/resnet_big.py	/^def resnet18(**kwargs):$/;"	f
+resnet34	SupContrastFork/network/resnet_big.py	/^def resnet34(**kwargs):$/;"	f
+resnet50	SupContrastFork/network/resnet_big.py	/^def resnet50(**kwargs):$/;"	f
+save_model	SupContrastFork/util.py	/^def save_model(model, optimizer, opt, epoch, save_file):$/;"	f
+set_loader	SupContrastFork/main_supcon.py	/^def set_loader(opt):$/;"	f
+set_model	SupContrastFork/main_linear.py	/^def set_model(opt):$/;"	f
+set_model	SupContrastFork/main_supcon.py	/^def set_model(opt):$/;"	f
+set_model	SupContrastFork/make_emb.py	/^def set_model(opt):$/;"	f
+set_optimizer	SupContrastFork/util.py	/^def set_optimizer(opt, model):$/;"	f
+sizeof_fmt	SupContrastFork/main_supcon.py	/^def sizeof_fmt(num, suffix="B"):$/;"	f
+sns	plot_makers/gen_confusion.py	/^    import seaborn as sns$/;"	I	function:main	file:
+tb_logger	SupContrastFork/main_supcon.py	/^import tensorboard_logger as tb_logger$/;"	I
+tensor_to_image	preprocess_tensors.py	/^def tensor_to_image(path):$/;"	f
+train	SupContrastFork/main_linear.py	/^def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):$/;"	f
+train	SupContrastFork/main_supcon.py	/^def train(train_loader, model, criterion, optimizer, epoch, opt):$/;"	f
+train	SupContrastFork/make_emb.py	/^def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):$/;"	f
+update	SupContrastFork/util.py	/^    def update(self, val, n=1):$/;"	m	class:AverageMeter
+validate	SupContrastFork/main_linear.py	/^def validate(val_loader, model, classifier, criterion, opt):$/;"	f
+validate	SupContrastFork/make_emb.py	/^def validate(val_loader, model, classifier, criterion, opt):$/;"	f
+warmup_learning_rate	SupContrastFork/util.py	/^def warmup_learning_rate(args, epoch, batch_id, total_batches, optimizer):$/;"	f
+write_variations	make_bert_vars.py	/^def write_variations(header, seq, out_f, fe):$/;"	f
+write_variations	make_variations.py	/^def write_variations(header, seq, out_f):$/;"	f

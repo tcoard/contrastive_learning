@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import pickle
+import random
 import math
 import glob
 from functools import cache
@@ -8,6 +9,19 @@ import numpy as np
 import torch
 import torch.optim as optim
 from torch.utils.data import Dataset
+
+def get_x_length(data):
+    sizes = []
+    for datum in data:
+        size = 0
+        for tens in data:
+            # if max(tens) > 0:
+            if torch.any(tens):
+                size += 1
+        sizes.append(size)
+
+    return sizes
+
 
 CLASS_LOOKUP = {
     "AMINOGLYCOSIDE": 0,
@@ -21,6 +35,18 @@ CLASS_LOOKUP = {
     "TETRACYCLINE": 8,
     "TRIMETHOPRIM": 9,
 }
+
+MAX_AA_LEN = 1000
+def pad(tensor):
+    aa_len, _ = tensor.shape
+
+    if aa_len > MAX_AA_LEN:
+        raise ValueError("Too long")
+
+    aa_len_diff = float(MAX_AA_LEN - aa_len)
+    pad_amount = (0, 0, math.ceil(aa_len_diff / 2), math.floor(aa_len_diff / 2))
+    b = torch.nn.functional.pad(tensor, pad_amount, "constant", 0)
+    return b
 
 
 
@@ -39,39 +65,59 @@ class CoalaDataset(Dataset):
         self.transform = transform
         self.run_type = run_type
         if self.run_type == "train":
+            # root_dir = "/home/tcoard/w/contrastive/med_emb_train"
             path_data = []
-            root = "/home/tcoard/w/contrastive"
-            with open(f"{root}/pairs_train.pkl", "rb") as f:
-                train_pairs = pickle.load(f)
+            seqs = iter(sorted(glob.glob(f"{root_dir}/*")))
+            for pair1 in seqs:
+                pair2 = next(seqs)
+                sep_path = pair1.split("|")[:-1]
+                if sep_path != pair2.split("|")[:-1]:
+                    raise ValueError(f"{sep_path} != {pair2.split('|')[:-1]}")
 
-            for seqs in train_pairs:
-                seqs = iter(seqs)
-                for pair1 in seqs:
-                    pair2 = next(seqs)
-                    sep_path = pair1.split("|")
-                    resistance = CLASS_LOOKUP[sep_path[2]]
-                    path1 = f"{root}/{pair1}"
-                    path2 = f"{root}/{pair2}"
-                    path_data.append(((path1, path2), resistance))
+                resistance = CLASS_LOOKUP[sep_path[2]]
+                path_data.append(((pair1, pair2), resistance))
+
+            # random.shuffle(path_data)
             self.path_data = path_data
+
+
+            # with open(f"{root}/pairs_train.pkl", "rb") as f:
+            #     train_pairs = pickle.load(f)
+            # for seqs in train_pairs:
+            #     seqs = iter(seqs)
+            #     for pair1 in seqs:
+            #         pair2 = next(seqs)
+            #         sep_path = pair1.split("|")
+            #         resistance = CLASS_LOOKUP[sep_path[2]]
+            #         path1 = f"{root}/{pair1}"
+            #         path2 = f"{root}/{pair2}"
+            #         path_data.append(((path1, path2), resistance))
+            # self.path_data = path_data
 
         elif self.run_type == "test":
+            root_dir = "/home/tcoard/w/contrastive/test_seqs"
             path_data = []
-            root = "/home/tcoard/w/contrastive"
-            with open(f"{root}/pairs_test.pkl", "rb") as f:
-                test_pairs = pickle.load(f)
+            seqs = iter(sorted(glob.glob(f"{root_dir}/*")))
+            for seq in seqs:
+                sep_path = seq.split("|")[:-1]
 
-            for seqs in test_pairs:
-                for seq in seqs:
-                    if seq.endswith("var0.pt"):
-                        sep_path = seq.split("|")
-                        resistance = CLASS_LOOKUP[sep_path[2]]
-                        path1 = f"{root}/{seq}"
-                        path_data.append((path1, resistance))
+                resistance = CLASS_LOOKUP[sep_path[2]]
+                path_data.append((seq, resistance))
+
             self.path_data = path_data
-
-
-
+            # path_data = []
+            # root = "/home/tcoard/w/contrastive"
+            # with open(f"{root}/pairs_test.pkl", "rb") as f:
+            #     test_pairs = pickle.load(f)
+            # for seqs in test_pairs:
+            #     for seq in seqs:
+            #         if seq.endswith("var0.pt"):
+            #             sep_path = seq.split("|")
+            #             resistance = CLASS_LOOKUP[sep_path[2]]
+            #             path1 = f"{root}/{seq}"
+            #             path_data.append((path1, resistance))
+            # self.path_data = path_data
+            ##########################
             # path_data = []
             # embedding_paths = glob.glob(f"{self.root_dir}/*var0.pt")
             # for path1 in embedding_paths:
@@ -101,10 +147,12 @@ class CoalaDataset(Dataset):
     def __getitem__(self, idx):
         if self.run_type == "train":
             (path1, path2), resistance = self.path_data[idx]
-            return ((torch.load(path1).numpy(), torch.load(path2).numpy()), resistance)
+            # return ((pad(torch.load(path1)["representations"][34]), pad(torch.load(path2)["representations"][34])), resistance)
+            return ((pad(torch.load(path1)), pad(torch.load(path2))), resistance)
         elif self.run_type == "test":
             path1, resistance = self.path_data[idx]
-            return (torch.load(path1), resistance)
+            return (pad(torch.load(path1)["representations"][34]), resistance)
+            # return (pad(torch.load(path1)), resistance)
 
 
 
@@ -154,7 +202,6 @@ def accuracy(output, target, topk=(1,)):
     with torch.no_grad():
         maxk = max(topk)
         batch_size = target.size(0)
-
         _, pred = output.topk(maxk, 1, True, True)
         pred = pred.t()
         correct = pred.eq(target.view(1, -1).expand_as(pred))

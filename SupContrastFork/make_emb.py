@@ -50,7 +50,7 @@ def parse_option():
                         help='batch_size')
     parser.add_argument('--num_workers', type=int, default=16,
                         help='num of workers to use')
-    parser.add_argument('--epochs', type=int, default=50,
+    parser.add_argument('--epochs', type=int, default=10,
                         help='number of training epochs')
 
     # optimization
@@ -120,21 +120,22 @@ def parse_option():
 
 
 def set_model(opt):
+    model = SupConResNet(name=opt.model)
     # if opt.model == "att":
-    model = SingleModel(
-    in_channels=1280,
-    out_channels=att_opt.ResNet_out_channels,
-    kernel_size=att_opt.ResNet_kernel_size,
-    n_layers=att_opt.ResNet_n_layers,
-    n_class=10,
-    n_hidden_state=att_opt.LSTM_n_hidden_state[0],
-    use_gru=True,
-    lstm_dropout=0,
-    n_lstm_layers=1,
-    activation="sigmoid",
-    hierarchical=False,
+    # model = SingleModel(
+    # in_channels=1280,
+    # out_channels=att_opt.ResNet_out_channels,
+    # kernel_size=att_opt.ResNet_kernel_size,
+    # n_layers=att_opt.ResNet_n_layers,
+    # n_class=10,
+    # n_hidden_state=att_opt.LSTM_n_hidden_state[0],
+    # use_gru=True,
+    # lstm_dropout=0,
+    # n_lstm_layers=1,
+    # activation="sigmoid",
+    # hierarchical=False,
 
-            )
+    #         )
     # else:
         # model = SupConResNet(name=opt.model)
         # pass
@@ -147,8 +148,7 @@ def set_model(opt):
 
     if torch.cuda.is_available():
         if torch.cuda.device_count() > 1:
-            # model.encoder = torch.nn.DataParallel(model.encoder)
-            pass
+            model.encoder = torch.nn.DataParallel(model.encoder)
         else:
             new_state_dict = {}
             for k, v in state_dict.items():
@@ -176,10 +176,17 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
     top1 = AverageMeter()
 
     end = time.time()
-    for idx, (images, labels) in enumerate(train_loader):
+    idx = 0
+    for images, labels in train_loader:
         data_time.update(time.time() - end)
-        images = images[0]
-        images = images.cuda(non_blocking=True)
+        image = image.cuda(non_blocking=True)
+
+        ###
+        emb = model(images)
+        torch.save({"emb": emb, "labels": labels}, f"test/{idx}.pt")
+        ###
+        continue
+
         labels = labels.cuda(non_blocking=True)
         bsz = labels.shape[0]
 
@@ -188,7 +195,7 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
 
         # compute loss
         with torch.no_grad():
-            features = model.att_bilstm_1(images, get_x_length(images))
+            features = model.encoder(image)
         output = classifier(features.detach())
         loss = criterion(output, labels)
 
@@ -216,6 +223,7 @@ def train(train_loader, model, classifier, criterion, optimizer, epoch, opt):
                    epoch, idx + 1, len(train_loader), batch_time=batch_time,
                    data_time=data_time, loss=losses, top1=top1))
             sys.stdout.flush()
+        idx += 1
 
     return losses.avg, top1.avg
 
@@ -228,7 +236,6 @@ def validate(val_loader, model, classifier, criterion, opt):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-
     with torch.no_grad():
         end = time.time()
         for idx, (images, labels) in enumerate(val_loader):
@@ -237,7 +244,7 @@ def validate(val_loader, model, classifier, criterion, opt):
             bsz = labels.shape[0]
 
             # forward
-            output = classifier(model.att_bilstm_1(images, get_x_length(images)))
+            output = classifier(model.encoder(images))
             loss = criterion(output, labels)
 
             # update metric
@@ -280,8 +287,10 @@ def main():
 
         # train for one epoch
         time1 = time.time()
-        loss, acc = train(train_loader, model, classifier, criterion,
+        # loss, acc = train(train_loader, model, classifier, criterion,
+        loss, acc = train(val_loader, model, classifier, criterion,
                           optimizer, epoch, opt)
+        return
         time2 = time.time()
         print('Train epoch {}, total time {:.2f}, accuracy:{:.2f}'.format(
             epoch, time2 - time1, acc))
